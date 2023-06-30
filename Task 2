@@ -1,0 +1,52 @@
+import csv
+
+# Read departments
+departments = {}
+with open('departments.csv', 'r') as dept_file:
+    dept_reader = csv.reader(dept_file)
+    next(dept_reader)  # Skip header row
+    for row in dept_reader:
+        dept_id, dept_name = row
+        departments[dept_id] = dept_name
+
+# Read employees
+employees = {}
+with open('employees.csv', 'r') as emp_file:
+    emp_reader = csv.reader(emp_file)
+    next(emp_reader)  # Skip header row
+    for row in emp_reader:
+        emp_id, emp_name, dept_id = row
+        employees[emp_id] = {'name': emp_name, 'dept_id': dept_id}
+
+# Read salaries
+salaries = {}
+with open('salaries.csv', 'r') as salary_file:
+    salary_reader = csv.reader(salary_file)
+    next(salary_reader)  # Skip header row
+    for row in salary_reader:
+        emp_id, month, amount = row
+        if emp_id not in salaries:
+            salaries[emp_id] = []
+        salaries[emp_id].append({'month': month, 'amount': amount})
+
+# Generate the report
+report = {}
+for emp_id, emp_data in employees.items():
+    emp_name = emp_data['name']
+    dept_id = emp_data['dept_id']
+    if dept_id not in report:
+        report[dept_id] = {'department': departments.get(dept_id, 'Unknown'), 'total_salary': 0, 'employee_count': 0}
+    report[dept_id]['total_salary'] += sum(int(salary['amount']) for salary in salaries.get(emp_id, []))
+    report[dept_id]['employee_count'] += 1
+
+# Print the report
+for dept_id, dept_data in report.items():
+    department = dept_data['department']
+    total_salary = dept_data['total_salary']
+    employee_count = dept_data['employee_count']
+    average_salary = total_salary / employee_count if employee_count > 0 else 0
+    print(f"Department: {department}")
+    print(f"Total Salary: ${total_salary}")
+    print(f"Number of Employees: {employee_count}")
+    print(f"Average Salary: ${average_salary:.2f}")
+    print()
